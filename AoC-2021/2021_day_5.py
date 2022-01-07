@@ -24,36 +24,45 @@ class LineOverlaps():
             item = item.split(",")
             coords.append((int(item[0]), int(item[1])))
 
-        # Split coordinates in to groups of 2. (start coords, end coords) for each line.
+        # Split coordinates in to groups of 2. (start coords, end coords) 
+        # for each line.
         self.coords = [coords[i:i + 2] for i in range(0, len(coords), 2)]
 
-    def count_hoz_vert_overlaps(self):
+    def sort_coordinates(self):
+        """Sorts coordinates of lines in to horizontal, vertical, and diagonal, 
+        and finds maximum value of x and y coordinates."""
         # Find max x and y coordinates to find size of array needed.
         x_coords = []
         y_coords = []
-        hoz_lines = []
-        vert_lines = []
+        self.hoz_lines = []
+        self.vert_lines = []
+        self.diag_lines = []
         for lst in self.coords:
-            print(lst)
-            # If x1 = x2 or y1 = y2, line is horizontal and needs to be drawn.
+            # If x1 = x2 or y1 = y2, line is horizontal/vertical and needs 
+            # to be drawn. Else is diagonal.
             if lst[0][0] == lst[1][0]:
-                vert_lines.append(lst)
-            if lst[0][1] == lst[1][1]:
-                hoz_lines.append(lst)
+                self.vert_lines.append(lst)
+            elif lst[0][1] == lst[1][1]:
+                self.hoz_lines.append(lst)
+            else:
+                self.diag_lines.append(lst)
             for tup in lst:
                 x_coords.append(tup[0])
                 y_coords.append(tup[1])
 
-        max_x = max(x_coords)
-        max_y = max(y_coords)
+        self.max_x = max(x_coords)
+        self.max_y = max(y_coords)
 
-        # Create array of zeroes with the correct size. 
-        line_arry = np.zeros((max_x+1, max_y+1), np.int8)
+    def parse_intermediate_coordinates(self):
+        """Uses sorted coordinates to find all integer points along lines 
+        drawn between given coordinates, and returns list of these points."""
+        
+        self.sort_coordinates()
 
-
-        # Find range of coordinates in between line points and add them to list.
+        # Find range of coordinates in between line points and add them to 
+        # list.
         all_coords = []
-        for line in hoz_lines:
+        for line in self.hoz_lines:
             if line[0][0] < line [1][0]:
                 for i in range(line[0][0], line[1][0]+1):
                     all_coords.append((i, line[0][1]))
@@ -61,7 +70,7 @@ class LineOverlaps():
                 for i in range(line[1][0], line[0][0]+1):
                     all_coords.append((i, line[0][1]))
 
-        for line in vert_lines:
+        for line in self.vert_lines:
             if line[0][1] < line[1][1]:
                 for i in range(line[0][1], line[1][1]+1):
                     all_coords.append((line[0][0], i))
@@ -69,15 +78,27 @@ class LineOverlaps():
                 for i in range(line[1][1], line[0][1]+1):
                     all_coords.append((line[0][0], i))
 
+        return all_coords
+        
+    def draw_lines(self):
+        # Add 1 to every coordinate along all lines. Points with overlap will
+        # continue to increase to 2 and above. Count overlaps and return.
+        all_coords = self.parse_intermediate_coordinates()
+
+        line_arry = np.zeros((self.max_x+1, self.max_y+1), np.int8)
+        
         for coord in all_coords:
             line_arry[coord] +=1
 
         n = line_arry >= 2
-
+        
         return len(line_arry[n])
         
 
         
 
+    def count_all_overlaps(self):
+        pass
+
 a = LineOverlaps()
-a.count_hoz_vert_overlaps()
+print(a.draw_lines())
