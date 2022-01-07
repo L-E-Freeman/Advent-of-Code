@@ -55,50 +55,74 @@ class LineOverlaps():
 
     def parse_intermediate_coordinates(self):
         """Uses sorted coordinates to find all integer points along lines 
-        drawn between given coordinates, and returns list of these points."""
+        drawn between given coordinates, and returns list of these points
+        for either just horizontal and vertical lines or all lines."""
         
         self.sort_coordinates()
 
         # Find range of coordinates in between line points and add them to 
         # list.
-        all_coords = []
+        hoz_vert_coords = []
         for line in self.hoz_lines:
             if line[0][0] < line [1][0]:
+                # +1 as must be inclusive of second coordinate.
                 for i in range(line[0][0], line[1][0]+1):
-                    all_coords.append((i, line[0][1]))
+                    hoz_vert_coords.append((i, line[0][1]))
             else:
                 for i in range(line[1][0], line[0][0]+1):
-                    all_coords.append((i, line[0][1]))
+                    hoz_vert_coords.append((i, line[0][1]))
 
         for line in self.vert_lines:
             if line[0][1] < line[1][1]:
                 for i in range(line[0][1], line[1][1]+1):
-                    all_coords.append((line[0][0], i))
+                    hoz_vert_coords.append((line[0][0], i))
             else:
                 for i in range(line[1][1], line[0][1]+1):
-                    all_coords.append((line[0][0], i))
+                    hoz_vert_coords.append((line[0][0], i))
 
-        return all_coords
+        diag_coords = []
+        for line in self.diag_lines:
+            # y = mx + c
+            m = (line[0][1] - line[1][1]) / (line[0][0] - line[1][0])
+            # Finding c
+            y = line[0][1]
+            x = line[0][0]
+            c = y - (x*m)
+
+            # Find range of x values.
+            x_values = []
+            if line[0][0] < line[1][0]:
+                for i in range(line[0][0], line[1][0]+1):
+                    x_values.append(i)
+            else:
+                for i in range(line[1][0], line[0][0]+1):
+                    x_values.append(i)
+
+            # Solve y for every value of x
+            for i in x_values:
+                y_value = (m*i) + c
+                diag_coords.append((i, int(y_value)))
+
+        all_coords = hoz_vert_coords + diag_coords
+
+        return hoz_vert_coords, all_coords
         
-    def draw_lines(self):
-        # Add 1 to every coordinate along all lines. Points with overlap will
-        # continue to increase to 2 and above. Count overlaps and return.
-        all_coords = self.parse_intermediate_coordinates()
+    def draw_lines(self, only_horizontal=False):
+        """Takes parameter of whether all coordinates or just the hoz and
+        vert subset should be used. Adds 1 to every coordinate point in 
+        array and returns the number of 2's in the array, indicating 
+        overlapping lines"""
+        
+        if only_horizontal:
+            coords = self.parse_intermediate_coordinates()[0]
+        else:
+            coords = self.parse_intermediate_coordinates()[1]
 
         line_arry = np.zeros((self.max_x+1, self.max_y+1), np.int8)
         
-        for coord in all_coords:
+        for coord in coords:
             line_arry[coord] +=1
 
         n = line_arry >= 2
         
         return len(line_arry[n])
-        
-
-        
-
-    def count_all_overlaps(self):
-        pass
-
-a = LineOverlaps()
-print(a.draw_lines())
