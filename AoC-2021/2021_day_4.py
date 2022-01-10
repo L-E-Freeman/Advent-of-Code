@@ -1,7 +1,9 @@
 import numpy as np
 
 class BingoSolver():
-
+    """Calculates winning and losing scores for a set of bingo boards given 
+    the numbers being drawn."""
+    
     def __init__(self):
         """Initialize input variables."""
         with open("2021_day_4_input.txt") as file_object:

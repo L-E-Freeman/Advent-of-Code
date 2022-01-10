@@ -2,6 +2,8 @@ import numpy as np
 
 
 class LineOverlaps():
+    """Finds the occurences of 2 or more lines overlapping, where 
+    line points are given by their start and end coordinates."""
 
     def __init__(self):
         """Initialize input variable."""
